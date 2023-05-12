@@ -1,0 +1,14 @@
+TELEGRAM_TOKEN = ""
+CHAT_ID = ""
+
+LINK_TO_JIRA = ""
+LOGIN = ""
+JIRA_API_TOKEN = ""
+
+CURRENT_STREAM = "INTRUSION"
+YOUR_JIRA_BOARD = 434
+TASK_TYPE = "Bug"
+TASK_STATUS = ("Open", "Backlog")
+
+
+
