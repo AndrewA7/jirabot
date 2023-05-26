@@ -1,4 +1,3 @@
-import asyncio
 import sqlite3
 
 from aiogram import Bot
@@ -14,21 +13,17 @@ cur = conn.cursor()
 cur.execute("CREATE TABLE IF NOT EXISTS db_jira_issues (task_key STR, task_summary STR, "
             "task_type STR, task_status STR, task_reporter STR)")
 last_issue = ""
-list_of_issues = []
 
 
 async def tasks_in_db():
     cur.execute("SELECT key FROM issues;")
     conn.commit()
-    print([x[0] for x in cur.fetchall()])
-
+    print(f"Tasks in DB - {[x[0] for x in cur.fetchall()]}")
 
 
 async def request_all_tasks():
-    # global last_issue
     cur.execute("SELECT key FROM issues;")
     list_of_issues = [x[0] for x in cur.fetchall()]
-    # print(list_of_issues)
     for singleIssue in jira.search_issues(jql_str=f"project = {CURRENT_STREAM} AND type = {TASK_TYPE} "
                                                   f"AND status IN {TASK_STATUS} ORDER BY updated DESC, created DESC",
                                           maxResults=20):
@@ -41,10 +36,12 @@ async def request_all_tasks():
                               f"<i>Status: {singleIssue.fields.status}</i>"
             await bot.send_message(chat_id=CHAT_ID, text=message, parse_mode=ParseMode.HTML,
                                    disable_web_page_preview=True)
+            # await request_last_task()
+
 
         # list_of_issues.append(singleIssue.key)
-        cur.execute(f"INSERT INTO issues (key) VALUES (\"{singleIssue.key}\");")
-        conn.commit()
+        # cur.execute(f"INSERT INTO issues (key) VALUES (\"{singleIssue.key}\");")
+        # conn.commit()
 
 
 async def truncate_table():
@@ -64,5 +61,29 @@ async def request_last_task():
                                                   f"AND status IN {TASK_STATUS} ORDER BY updated DESC, created DESC",
                                           maxResults=1):
         if singleIssue.key != last_issue:
+            print(f"last issue is {singleIssue.key}, type - {singleIssue.fields.issuetype}")
             last_issue = singleIssue.key
-            await request_all_tasks()
+
+
+async def does_bot_working():
+    print("-------------diagnostic started--------------")
+    cur.execute("SELECT key FROM issues;")
+    list_of_issues = [x[0] for x in cur.fetchall()]
+
+    jira_list = []
+    for singleIssue in jira.search_issues(jql_str=f"project = {CURRENT_STREAM} AND type = {TASK_TYPE} "
+                                                  f"AND status IN {TASK_STATUS} ORDER BY updated DESC, created DESC",
+                                          maxResults=50):
+        jira_list.append(singleIssue.key)
+    # print(f"Tasks in Jira - {jira_list}")
+    compare_lists = (list_of_issues == jira_list)
+    # print(compare_lists)
+    # print(list_of_issues)
+    # print(jira_list)
+    if compare_lists:
+        print("-------------bot works correctly--------------")
+    else:
+        await bot.send_message(chat_id=CHAT_ID, text="@Andrew_Dzhulay Something goes wrong. Reboot me please",
+                               parse_mode=ParseMode.HTML)
+        print("-------------bot does not works--------------")
+
