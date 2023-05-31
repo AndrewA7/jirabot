@@ -8,9 +8,9 @@ async def start(message: types.Message):
     await message.answer(text="Hi")
 
 
-@dp.message_handler(lambda x: x.text == "FUCK")
+@dp.message_handler(commands=["FUCK_YOU"])
 async def start_x(message: types.Message):
-    await message.answer(text="FUCK")
+    await message.answer(text="Потринди мені тут... морда кожана")
 
 
 @dp.message_handler(commands=["get_task_status"])
